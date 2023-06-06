@@ -20,7 +20,7 @@ disk_total=$(df -Bg | grep "^/dev/" | grep -v "/boot$" | awk '{disk_total += $2}
 disk_percent=$(df -m | grep "^/dev/" | grep -v "/boot$" | awk '{disk_used += $3} {disk_total+= $2} END {printf("%.2f"), disk_used/disk_total*100}')
 
 #PROCESSOR (CPU)
-cpu_load=$(top -bn1 | grep "^%Cpu" | awk '{printf("%.1f"), $2}')
+cpu_load=$(top -bn1 | grep "^%Cpu" | awk '{printf("%.1f"), 100-$8}')
 
 #LAST REBOOT
 last_boot=$(who -b | grep system | awk '{print $3 " " $4}')
@@ -45,7 +45,7 @@ mac=$(ip link show | grep ether | awk '{print $2}')
 sudo_commands=$(journalctl _COMM=sudo | grep COMMAND | wc -l)
 
 #WALL - write all :)
-wall "	#Architecture : $arch
+wall "		#Architecture : $arch
 	#CPU physical : $cpu_phys 
 	#vCPU : $cpu_virt
 	#Memory Usage : $ram_used/${ram_total}MB ($ram_percent%) 
