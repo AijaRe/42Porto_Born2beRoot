@@ -1,5 +1,28 @@
 # 42Porto_Born2beRoot
 Create and configure Virtual Machine following specific rules, add a shell script for monitoring the system.
+## Index
+
+- [VirtualBox](#virtualbox)
+- [VM (Virtual Machine)](#vm-virtual-machine)
+- [LVM (Logical Volume Manager)](#lvm-logical-volume-manager)
+- [VM configuration](#vm-configuration)
+  - [sudo / su](#sudo--su)
+  - [Users, Groups and Hostname](#users-groups-and-hostname)
+  - [Install Vim, Git (optional) and AppArmor](#install-vim-git-optional-and-apparmor)
+  - [SSH - install and config](#ssh---install-and-config)
+  - [Run VM remotely through SSH port](#run-vm-remotely-through-ssh-port)
+  - [Firewall - install and config](#firewall---install-and-config)
+  - [Close DHCP Port](#close-dhcp-port)
+  - [Strong password config for sudo](#strong-password-config-for-sudo)
+  - [Password Policy](#password-policy)
+- [Script](#script)
+  - [Monitoring](#monitoring)
+- [Cron](#cron)
+  - [Sync date and time](#sync-date-and-time)
+- [Install Wordpress (+lighttp, MariaDB, PHP)](#install-wordpress-lighttp-mariadb-php)
+- [Signature](#signature)
+- [Useful links](#useful-links)
+
 
 ## VirtualBox
 
