@@ -229,3 +229,180 @@ iolog_dir - all the input and output file (previous line) will be stored in this
 requiretty - activate TTY (teletypewriter) mode. It provides the file name of the terminal that is currently connected to the standard input. When `requiretty` is set, `sudo` must be run from a logged-in terminal session (a tty). By enabling this option, sudo ensures that the user is physically present at the terminal to enter their password and execute commands. This prevents `sudo` from being used from daemons or other detached processes like cronjobs or webserver plugins. It also means you can't run it directly from an `ssh` call without setting up a terminal session.
 
 secure_path - a list of directories where sudo will search for executable files when a command is executed.
+
+### Password Policy
+
+Edit file `/etc/login.defs`
+
+PASS_MAX_DAYS 99999 -> PASS_MAX_DAYS 30
+
+PASS_MIN_DAYS 0 -> PASS_MIN_DAYS 2
+
+To continue configuration install `sudo apt install libpam-pwquality`
+
+Edit file `/etc/pam.d/common-password`. 
+
+After `pam_pwquality.so retry=3` on the same line add `minlen=10 ucredit=-1 dcredit=-1 lcredit=-1 maxrepeat=3 reject_username difok=7 enforce_for_root`
+
+`minlen=10` - minimum number of password characters
+
+`ucredit=-1` - at least one uppercase (”-”at least, “+”not more than)
+
+`dcredit=-1` - at least one digit
+
+`lcredit=-1` - at least one lowercase
+
+`maxrepeat=3` - not more than 3 repeated characters in a row
+
+`reject_username` - cannot contain username
+
+`difok=7` - at least 7 different characters compared to previous password
+
+`enforce_for_root` - same rules for root.
+
+Check settings for user and for root: `chage -l <username>`. 
+
+Update passwd policy for your user: `sudo chage --maxdays 30 --mindays 2 --warndays 7 <username>`.
+
+## Script
+
+Script - sequence of commands stored in a file that when executed will do the function of each command.
+
+`Wall` -  displays a message or the contents of a file on the terminals of all currently logged in users.
+
+`grep` - grab a pattern and return the line where this pattern is found (`-i` ignore case).
+
+`awk` - pattern scanning and processing. Splits input lines into fields and compares line/field to pattern.
+
+`wc` - prints a newline (-l), word (-w), chars (-m) and byte (-c) counts for files.
+
+- **Architecture**: command `uname -a` (”a” stands for “all”).
+- How many **physical processors**: use the file /proc/cpuinfo, `cat /proc/cpuinfo` it to see inside. `grep "physical id" /proc/cpuinfo | sort | uniq | wc -l` : sort and uniq guarantees that there are no duplicates (physical processor might be the same for each virtual).
+- How many **virtual processors**: `grep "^processor" /proc/cpuinfo | wc -l`. ^ indicates beginning of the line = “line starting with the word processor..” Duplicates should not appear, so no need for the rule.
+- **RAM memory** available in MB and usage in %. Subject text dosn´t match subject example (one states available memory and the other one - used). I will follow the example with used memory display as it makes more sense to me. Command `free --mega` to see info about RAM. Current available RAM and its utilization rate as a percentage: divide used by total and display the result as percentage (multiply by 100 and add % sign). Get used memory: `free --mega | grep Mem | awk '{print $3}'` (get row containing Mem, and print 3rd column). Get total memory: `free --mega | grep Mem | awk '{print $2}'`. Display percentage: `free --mega | grep Mem | awk '{printf("%.2f"), $3/$2*100}'`.
+- **Server (disk) memory** available in GB and usage in %. Command `df` stands for "disk filesystem”, it will show the disk space. To show it in MB use the flag `-m` and in GB use 2 flags: `-B` to show the block size of the size we will ask, and `-g` that makes the size in GB. Our server is the lines that start with `/dev/` so to get oly those lines we can `grep "^/dev/"`. Exclude lines that end with “boot” because we don’t have access to it: `grep -v "/boot$”`. Create variable “disk_used” and use the awk command and sum the value of the 4th word of each line and once all the lines are summed, print the final result of the sum: `awk '{disk_used += $3} END {print disk_used}'`. Used disk memory: `df -Bm | grep "^/dev/" | grep -v "/boot$" | awk '{disk_used += $3} END {print disk_used}'`. Total disk memory: `df -Bg | grep "^/dev/" | grep -v "/boot$" | awk '{disk_total += $2} END {print disk_total}'`. Calculate percentage used_space / total_space * 100: `df -m | grep "^/dev/" | grep -v "/boot$" | awk '{disk_used += $3} {disk_total+= $2} END {printf("%.2f"), disk_used/disk_total*100}'`.
+- **Processors (CPU) usage percentage**. Command `top` already give us the CPU %. `top -bn1 | grep "^%Cpu" | awk '{printf("%.1f"), 100-$8}'` . Flag `-b` to start in batch mode: useful for sending output from top to other programs or to a file; Flag `-n` that specify the max number of iterations or frames. `grep "^%Cpu"` get the line that contains CPU %. `awk '{printf("%.1"), 100-$8}'` print the value minus idle time CPU which is field 8.
+- **Date and time of the last reboot**. Command `who` with the `-b` flag, as this flag will display the time of the last system boot. `who -b | grep system | awk '{print $3 " " $4}'`.
+- **LVM active or not**. Command `lsblk` shows information about all block devices (hard drives, SSDs, memories, etc). If condition: count the number of lines in which "lvm" appears and if there are more than 0 print Yes, if there are 0 print No.
+
+```bash
+if [ $(lsblk | grep "lvm" | wc -l) -gt 0 ]; #gt - greater than, eq - equal to
+then echo yes; 
+else echo no;
+fi
+```
+
+- Number of **active TCP** (Transmission Control Protocol) connections. A TCP connection represents a logical channel or session established between two devices, typically a client and a server, to facilitate the exchange of data. It provides reliable, connection-oriented communication, ensuring that data is delivered accurately and in the correct order. `netstat` command is not used anymore, take `ss` (socket statistics) instead. `-a` (all) flag not necessary, since we don’t look for non-established sockets. `-t` displays TCP sockets. `ss -t | grep ESTAB | wc -l`
+- Number the **users** using the network. `users | wc -w`
+- **IPv4 address** of your server and its **MAC** (Media Access Control) address. IP address: `hostname -i` (-i displays only the hosts IP / network address; -I displays all computers network IP addresses). Normally it’s in IPv4 format. If in trouble `ifconfig -4` gets only IPv4. MAC: `ip link show | grep ether | awk '{print $2}'` or `ifconfig -a | grep ether | awk '{print $2}'`(latter is deprecated) .
+- Number of **commands executed with the sudo program**. Command `journaclctl` is a tool for collecting and managing the system logs. If you don’t have access to this command `sudo apt install net-tools`. `_COMM=sudo` filters the entries where the command name is “sudo”. When you start or close the root session it also appears in the log, so to finish filtering we will put a `grep COMMAND` and this will only show the command lines. `journalctl _COMM=sudo | grep COMMAND | wc -l`
+
+### Monitoring
+
+You can find the script monitoring.sh in the root of this repository. 
+
+Open the folder where the script will be placed: `cd /usr/local/bin`(used for locally installed binaries that are not part of the core operating system).
+
+Create monitoring.sh in this folder (nano, vim, touch..).
+
+Give permissions to read and execute `chmod +rx monitoring.sh`.
+
+Add the rule to execute the script without the sudo password. `sudo visudo`
+
+Under `%sudo ALL=(ALL:ALL) ALL` add this line to run the script without password `your_username ALL=(ALL) NOPASSWD: /usr/local/bin/monitoring.sh` (although since the script will run from root crontab and will use wall, it will execute also without this line, but it’s handy to know that we can grant access to execute commands without password).
+
+`sudo reboot`
+
+## Cron
+
+Cron is a time-based job scheduler. It allows users to schedule and automate the execution of tasks or commands at predefined intervals or specific times. Daemon - computer program that runs as a background process, rather than being under the direct control of an interactive user.The crontab file follows a specific format with fields representing / minutes / hours / days of the month / months / and days of the week (0 and 7 are Sunday)/ followed by the command to be executed. Each field can contain a value or a wildcard (*) to match any value. For example, a line in a crontab file might look like: `30 8 * * * /path/to/command`**.**
+
+System-wide crontab files are typically located in the `/etc` directory and are used for tasks that should run regardless of the user logged in. User-specific crontab files can be managed with the `crontab` command and are located in each user's home directory.
+
+To edit crontab file: `sudo crontab -u root -e` (-user, -edit). `*/10 * * * * /usr/local/bin/monitoring.sh` will run the script every 10 minutes `/` stands for step. But it will run on fixed minutes, e.g., 15:00, 15:10 etc. To take into account the boot time we need to add a delay that is the same amount that the second digit of minutes that we started the system: `sleep $(who -b | awk '{split($4, time, ":"); print time[2]%10}')` split the 4th field by delimiter “:” and print %10 of the 2nd field. Create a file with this script in the same folder as monitoring.sh `/usr/local/bin/sleep_mon.sh`, add +rx permissions and add the path to sleep delay. The full line: `*/10 * * * * /usr/local/bin/sleep_mon; /usr/local/bin/monitoring.sh`. 
+
+To make the script run after reboot add `@reboot /usr/local/bin/monitoring.sh` under the 10 min line. Add the sleep for 10 seconds to allow other system services and processes to initialize properly before executing the script. `@reboot sleep 10; /usr/local/bin/monitoring.sh`. 
+
+To check scheduled cronjobs: `sudo crontab -u root -l`.
+
+### Sync date and time
+
+If after saving VM in Current State it will boot with the same date and time when it was logged off previously (fails to update time), install and config NTP (Network Time Protocol) to sync your date: `sudo apt install ntp`. 
+
+Edit NTP config file: `sudo nano /etc/ntp.conf`.
+
+Find lines that start with “server” and add several servers (will depend on your country). For Portugal, add these lines:
+
+```bash
+server pt.pool.ntp.org
+server ntp02.fccn.pt
+server ntp04.fccn.pt
+```
+
+`sudo systemctl restart ntp`.
+
+Check if your time is updated: `date`.
+
+## Install Wordpress (+lighttp, MariaDB, PHP)
+
+You can follow installation and configuration from [gemartin99](https://github.com/gemartin99/Born2beroot-Tutorial/blob/main/README_EN.md#82---wordpress--services-configuration-).
+
+*Lighttpd* is open-source web server software. It's designed specifically for environments with limited resources since it consumes minimal CPU and RAM.
+
+*MariaDB*: open source database solution. 
+
+*PHP*: general-purpose scripting language that is especially suited for web development.
+
+Some of my comments:
+
+Add new port connection: `sudo ufw allow 80`. Port 80 is default port for HTTP traffic. For future fererence port 443 is the default port for HTTPS traffic.
+
+Check UFW status: `sudo ufw status`. 
+
+Download latest version of Wordpress: `sudo wget https://wordpress.org/latest.zip`*.*
+
+Set permissions for html folder: `sudo chmod -R 777 html` (e.g., to be able to ulpoad files to wp).
+
+Check if MariaDB is working: `systemctl status mariadb`.
+
+Check if PHP is working with lighttpd, create a file in `/var/www/html` named `info.php`. In that php file, write:
+
+```bash
+<?php
+phpinfo();
+?>
+```
+
+Then in your browser enter `<IP.address>/info.php` and a page with PHP info should appear.
+
+Extra service *Fail2Ban*: security tool that protects your server from brute-force attacks by monitoring log files and blocking IP addresses that show suspicious activity.
+
+You can follow [this guide of  mcombeau](https://github.com/mcombeau/Born2beroot/blob/main/guide/bonus_debian.md) to install and configure.
+
+Check if installed and working: `sudo systemctl status fail2ban.` Check status: `sudo fail2ban-client status`.
+
+To see banned IP addresses for SSH: `sudo fail2ban-client status sshd`. 
+
+## Signature
+
+Turn off VM: `sudo shutdown now`.
+
+Open terminal and cd into the path where is the .vdi of virtual machine. `sha1sum <VM_name>.vdi`
+
+It will display a line that is the ID of our VM. Copy it into signature.txt.
+
+It is important not to reopen the VM from this point on, because that will change the signature number. Take a snapshot or clone the machine for evaluation.
+
+## Useful links
+
+VirtualBox manual: http://download.virtualbox.org/virtualbox/UserManual.pdf
+
+Guide to VirtualBox: https://www.saashub.com/videos/sB_5fqiysi4/modal
+
+Guide and evaluation questions (outdated version): https://github.com/benmaia/42_Born2beRoot_Guide/tree/master
+
+Linux Directories Explained in 3mins: https://www.youtube.com/watch?v=42iQKuQodW4
+
+Sudo crash course: https://www.youtube.com/watch?v=07JOqKOBRnU
+
+AWK: https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
