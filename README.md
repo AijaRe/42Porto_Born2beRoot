@@ -176,7 +176,7 @@ Reboot the machine:  `sudo reboot`.
 
 To see the ip address `ip a` through VM terminal.
 
-Enter your terminal `ssh username@ipaddress -p 4242`. Change to root with `su`.
+Enter your terminal `ssh username@ipaddress -p 4242`.
 
 If get any error in the connection `rm ~/.ssh/known_hosts`.
 
