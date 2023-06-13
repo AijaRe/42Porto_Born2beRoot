@@ -213,10 +213,10 @@ Add the following lines
 `gateway 10.11.254.254`  
 `dns-nameservers 10.11.254.254` and exit the file  
 
-`sudo systemctl restart networking
-sudo systemctl status networking
-sudo reboot
-ss -tulnp`  
+`sudo systemctl restart networking`  
+`sudo systemctl status networking`  
+`sudo reboot`  
+`ss -tulnp`  
 
 ### Strong password config for sudo
 
