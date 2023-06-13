@@ -145,7 +145,7 @@ Check it is working properly: `sudo service ssh status`
 
 Verify that SSH uses only port 4242: `sudo service ssh status | grep listening`
 
-Log in SSH as newly created user, using password or key. `ssh <username>@<ipaddress> -p 4242`. Access any file or broadcast a message: `sudo -E wall <Message>`
+Log in SSH as newly created user, using password or key. `ssh <username>@<ipaddress> -p 4242`. Access any file or broadcast a message: `wall <Message>` or `sudo -E wall <Message>`
 
 Verify that you cannot use SSH as root. Try to login as root: `ssh root@<ipaddress> -p 4242`
 
