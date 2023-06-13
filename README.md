@@ -208,14 +208,14 @@ With or without DHCP, one must assign IP addresses to devices because they conta
 change line `allow-hotplug enp0s3` to `auto enp0s3`  
 change line `iface enp0s3 inet dhcp` to `iface enp0s3 inet static`  
 Add the following lines  
-`address your_current_ip\
-netmask 255.255.0.0\
-gateway 10.11.254.254\  
-dns-nameservers 10.11.254.254` and exit the file\  
+`address your_current_ip`    
+`netmask 255.255.0.0`    
+`gateway 10.11.254.254`  
+`dns-nameservers 10.11.254.254` and exit the file  
 
-`sudo systemctl restart networking\
-sudo systemctl status networking\ 
-sudo reboot\
+`sudo systemctl restart networking
+sudo systemctl status networking
+sudo reboot
 ss -tulnp`  
 
 ### Strong password config for sudo
