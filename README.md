@@ -202,21 +202,21 @@ If we use the `sudo ss -tunlp` command we will find that it's open to port 68, w
 
 With or without DHCP, one must assign IP addresses to devices because they contain the information used to accurately direct the transmission of data packets passed across any network. Without DHCP, computers moved to another network will have to undergo manual configuration to assign them new IP addresses. Similarly, the IP addresses assigned to computers that have left the network must be manually retrieved.
 
-`sudo ss -tunlp` - check the open doors
-`ip a` - get your current IP address
-`sudo nano /etc/network/interfaces`
-change line `allow-hotplug enp0s3` to `auto enp0s3`
-change line `iface enp0s3 inet dhcp` to `iface enp0s3 inet static`
-Add the following lines
-`address your_current_ip
-netmask 255.255.0.0
-gateway 10.11.254.254
-dns-nameservers 10.11.254.254` and exit the file
+`sudo ss -tunlp` - check the open doors  
+`ip a` - get your current IP address  
+`sudo nano /etc/network/interfaces`  
+change line `allow-hotplug enp0s3` to `auto enp0s3`  
+change line `iface enp0s3 inet dhcp` to `iface enp0s3 inet static`  
+Add the following lines  
+`address your_current_ip  
+netmask 255.255.0.0  
+gateway 10.11.254.254  
+dns-nameservers 10.11.254.254` and exit the file  
 
-`sudo systemctl restart networking
-sudo systemctl status networking
-sudo reboot
-ss -tulnp`
+`sudo systemctl restart networking  
+sudo systemctl status networking  
+sudo reboot  
+ss -tulnp`  
 
 ### Strong password config for sudo
 
