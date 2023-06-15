@@ -26,7 +26,7 @@ Create and configure Virtual Machine following specific rules, add a shell scrip
 
 ## VirtualBox
 
-For installation and partitioning you can follow [gemartin99](https://github.com/gemartin99/Born2beroot-Tutorial/tree/main) guide (my following configuration does differ significantly) . 
+For installation and partitioning you can follow [gemartin99](https://github.com/gemartin99/Born2beroot-Tutorial/tree/main) guide. Just take care to convert GB to GiB when determining partition size. 
 
 VirtualBox software allows guest operating system to run on another operating system. 
 
