@@ -36,8 +36,6 @@ An ISO file (often called an **ISO image**), is an archive file that contains an
 
 Put the image in **sgoinfre** (/nfs/homes/your_username/sgoinfre) if you are installing at school. It does not have artificial limits, so we will have enough space to install.
 
-Password: 42Porto2023
-
 **Snapshot:** save a particular state of a virtual machine and revert back to that state.
 
 ## VM (Virtual Machine)
